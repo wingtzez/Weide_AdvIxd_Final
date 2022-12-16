@@ -17,7 +17,7 @@
 ![Schema](images/schema.jpg)
 
 ##Wirings
-![wiring1](images/wiring1.jpg)
+![wiring1](images/wiring1.JPG)
 ![wiring2](images/wiring2.jpg)
 
 
