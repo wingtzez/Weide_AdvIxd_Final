@@ -14,11 +14,11 @@
 - Adafruit NeoPixel Ring
 
 ##Schema
-![Schema](images/schema.jpg)
+![Schema](images/schema.png)
 
 ##Wirings
 ![wiring1](images/wiring1.JPG)
-![wiring2](images/wiring2.jpg)
+![wiring2](images/wiring2.JPG)
 
 
 #Firmware
@@ -136,23 +136,23 @@ void loop() {
 
 #Software
 Apart from the firmware, the Unity editor is also a big part of the project. But it will be a little hard to include the entire Unity project here. I will just use several screenshots to demonstrate here.
-![unity1](images/unity1.jpg)
-![unity2](images/unity2.jpg)
-![unity3](images/unity3.jpg)
+![unity1](images/unity1.JPG)
+![unity2](images/unity2.JPG)
+![unity3](images/unity3.JPG)
 
 #Enclosure
 The concept setup in this project is about "the summoning ritual". So I used laser cuts to make those enclosures. For example, I have the magic circles mapped with the crystal pillar in the virtual part. And the magic wand used by the user.
 
 ##The Magic Circle
-![en1](images/en1.jpg)
-![en2](images/en2.jpg)
-![en3](images/en3.jpg)
+![en1](images/en1.JPG)
+![en2](images/en2.JPG)
+![en3](images/en3.JPG)
 
 ##The Wand
-![en4](images/en4.jpg)
-![en5](images/en5.jpg)
-![en6](images/en6.jpg)
-![en7](images/en7.jpg)
+![en4](images/en4.JPG)
+![en5](images/en5.JPG)
+![en6](images/en6.JPG)
+![en7](images/en7.JPG)
 
 #Conclusion
 Overall, my project has provided me with valuable insights into the potential and challenges of using Arduino and Unity Vuforia for creating interactive AR experiences. I hope that my work will inspire others to explore the possibilities of these tools and to continue pushing the boundaries of AR technology.
