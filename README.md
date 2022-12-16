@@ -1,36 +1,158 @@
-Introduction
-Provide a description of your initial project idea and include images of the concept sketches that you created in Part 1 of this assignment. Explain the reasoning behind your final choice of the project concept, whether it’s based on one of the initial sketches, a combination of or a departure from the original concepts.
+#Introduction
+## In this project, I set out to explore the potential of using Arduino and Unity Vuforia AR to create interactive AR experiences. My goals were to learn how to integrate Arduino sensors and actuators with Unity Vuforia, and to create a simple AR game using these tools.
 
-Implementation
-Explain your process of prototype development including all applicable aspects such as hardware (electronics), firmware (arduino code), software (p5.js or other code), integrations (Adafruit IO, IFTTT, Arduino IoT cloud, etc.), enclosure and mechanical design. Use a separate subheader for each part:
+#Implementation
+- Unity Editor and Arduino are the main two tools I used in this project. To build the communication between physical and virtual, I used Vuforia Engine within the Unity Editor to make the AR part happen. And then simply use the serial port to make communication between them. 
 
-Hardware
-List all the separate hardware components used in your project and briefly explain what they do. Include a schematic diagram image (Fritzing is recommended, but hand-drawn is OK) showing all the wiring connections between the M5Stack-CoreInk board and other components.
+- To be more specific, when Arduino is talking to unity, I am printing bytes to the serial monitor based on sensor inputs. And when unity is talking back to Arduino, I will have the unity runtime write bytes back to Arduino and use "readByteUntil" to get the bytes from the virtual parts.
 
-In addition, include at least one photo showing your hardware wiring. This can be several close-ups with the goal of showing how the wiring connections are made. This is especially important if your project has an enclosure, to reveal what is inside.
+#Hardware
+##Parts
+- Photoresistor
+- M5 CoreInk
+- A button
+- Adafruit NeoPixel Ring
 
-Firmware
-Provide a link to your Arduino code and explain a few important parts that make your prototype work. Most likely you should explain the inputs/outputs used in your code and how they affect the behavior of the prototype.
+##Schema
+![Schema](images/schema.jpg)
 
-For the Arduino editor link, you can paste the <iframe> embed, which will show up correctly on the GitHub Pages version of this document. To include shorter code snippets on the page, you can use the code block markdown, like this:
+##Wirings
+![wiring1](images/wiring1.jpg)
+![wiring2](images/wiring2.jpg)
 
-if(sensorVal > 1000) {  // sensor value higher than threshold
-   digitalWrite(ledPin, HIGH);  // turn on LED
+
+#Firmware
+```
+#include <Adafruit_NeoPixel.h>
+#ifdef __AVR__
+#include <avr/power.h>  // Required for 16 MHz Adafruit Trinket
+#endif
+// Which pin on the Arduino is connected to the NeoPixels?
+#define neoPin 25  // On Trinket or Gemma, suggest changing this to 1
+
+// How many NeoPixels are attached to the Arduino?
+#define NUMPIXELS 12  // Popular NeoPixel ring siz
+
+// When setting up the NeoPixel library, we tell it how many pixels,
+// and which pin to use to send signals. Note that for older NeoPixel
+// strips you might need to change the third parameter -- see the
+// strandtest example for more information on possible values.
+Adafruit_NeoPixel pixels(NUMPIXELS, neoPin, NEO_GRBW + NEO_KHZ800);
+
+//constants
+const int bufferSize = 20;
+const int photoPin = 26;
+const int lightThreshold = 100;
+const int darkThreshold = 500;
+const int buttonPin = 23;
+
+//variables
+char myCol[bufferSize];
+int lineFeed = 10;
+int ledPin = 10;
+int printByte1 = 10;
+int printByte2 = 20;
+int printByte3 = 30;
+int printByte4 = 40;
+int printByte5 = 50;
+int photoValue = 0;
+int currentButtonValue;
+int lastButtonValue;
+bool ledState;
+
+//timers
+unsigned long intakeTimer = 0;
+unsigned long outputTimer = 0;
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  pinMode(ledPin, OUTPUT);
+  pinMode(buttonPin,INPUT_PULLUP);
+  intakeTimer = millis();
+  outputTimer = millis();
+  pixels.begin();
+  pixels.clear();
+  pixels.show();
+  pixels.setBrightness(50);
+  digitalWrite(ledPin, HIGH);
+  currentButtonValue = digitalRead(buttonPin);
 }
-Software
-Similar to above, explain the important software components of your project with relevant code snippets and links (for example, a link to your p5 editor sketch).
 
-Integrations
-Include a link to and/or screenshots of other functional components of your project, like Adafruit IO feeds, dashboards, IFTTT applets, etc. In general, think of your audience as someone new trying to learn how to make your project and make sure to cover anything helpful to explain the functional parts of it.
+void loop() {
 
-Enclosure / Mechanical Design
-Explain how you made the enclosure or any other physical or mechanical aspects of your project with photos, screenshots of relevant files such as laser-cut patterns, 3D models, etc. (it’s great if you’re willing to share the editable source files too!)
+  photoValue = analogRead(photoPin);// Intake the photocell data
 
-Project outcome
-Summarize the results of your final project implementation and include at least 2 photos of the prototype and a video walkthrough of the functioning demo.
+  // intake data from unity and act accordingliy
+  if (millis() > intakeTimer + 8) {
+    Serial.readBytesUntil(lineFeed, myCol, 1);
+    if (strcmp(myCol, "F") == 0) {
+      //Fire
+      for (int i = 0; i < 13; i++) {
+        pixels.setPixelColor(i, pixels.Color(255, 0, 0));
+        pixels.show();
+      }
+    } else if (strcmp(myCol, "I") == 0) {
+      
+      // Ice
+      for (int i = 0; i < 13; i++) {
+        pixels.setPixelColor(i, pixels.Color(0, 0, 255));
+        pixels.show();
+      }
+    } else if (strcmp(myCol, "G") == 0) {
+      
+      // green
+      for (int i = 0; i < 13; i++) {
+        pixels.setPixelColor(i, pixels.Color(0, 255, 0));
+        pixels.show();
+      }
+    }
+    intakeTimer = millis();
+  }
 
-Conclusion
-As you wrap up the project, reflect on your experience of creating it. Use this as an opportunity to mention any discoveries or challenges you came across along the way. If there is anything you would have done differently, or have a chance to continue the project development given more time or resources, it’s a good way to conclude this section.
+  // output data to unity based on sensor
+  if (millis() > outputTimer + 8) {
+    photoValue = analogRead(photoPin);
+    lastButtonValue = currentButtonValue;      // save the last state
+    currentButtonValue = digitalRead(buttonPin); // read new state
+    // Serial.println("");
+    // Serial.println(lastButtonValue);
+    // Serial.println(currentButtonValue);
 
-Project references
-Please include links to any online resources like videos or tutorials that you may have found helpful in your process of implementing the prototype. If you used any substantial code from an online resource, make sure to credit the author(s) or sources.
+    if (lastButtonValue == HIGH && currentButtonValue == LOW) {
+      Serial.println(printByte3);
+    }
+    // Serial.println(photoValue);
+    if (photoValue <= lightThreshold) {
+      Serial.println(printByte1);
+    } else {
+      Serial.println(printByte2);
+    }
+
+    outputTimer = millis();
+  }
+}
+```
+
+#Software
+Apart from the firmware, the Unity editor is also a big part of the project. But it will be a little hard to include the entire Unity project here. I will just use several screenshots to demonstrate here.
+![unity1](images/unity1.jpg)
+![unity2](images/unity2.jpg)
+![unity3](images/unity3.jpg)
+
+#Enclosure
+The concept setup in this project is about "the summoning ritual". So I used laser cuts to make those enclosures. For example, I have the magic circles mapped with the crystal pillar in the virtual part. And the magic wand used by the user.
+
+##The Magic Circle
+![en1](images/en1.jpg)
+![en2](images/en2.jpg)
+![en3](images/en3.jpg)
+
+##The Wand
+![en4](images/en4.jpg)
+![en5](images/en5.jpg)
+![en6](images/en6.jpg)
+![en7](images/en7.jpg)
+
+#Conclusion
+Overall, my project has provided me with valuable insights into the potential and challenges of using Arduino and Unity Vuforia for creating interactive AR experiences. I hope that my work will inspire others to explore the possibilities of these tools and to continue pushing the boundaries of AR technology.
